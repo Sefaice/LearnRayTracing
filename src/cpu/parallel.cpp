@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <atomic>
+#include <algorithm>
 
 #include "parallel.h"
 
@@ -73,10 +74,51 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 	if (mat.type == Material::Lambert)
 	{
 		float3 target = rec.pos + rec.normal + RandomInUnitSphere();
-		//float3 target = rec.pos + rec.normal;
 		scattered = Ray(rec.pos, normalize(target - rec.pos));
 
 		attenuation = mat.albedo;
+
+		for (int i = 0; i < kSphereCount; ++i)
+		{
+			const Material& smat = s_SphereMats[i];
+			if (smat.emissive.x <= 0 && smat.emissive.y <= 0 && smat.emissive.z <= 0)
+				continue; // skip non-emissive
+			if (&mat == &smat)
+				continue; // skip self
+			const Sphere& s = s_Spheres[i];
+
+			// create a random direction towards sphere
+			// coord system for sampling: sw, su, sv，指前，指左，指上
+			float3 sw = normalize(s.center - rec.pos);
+			float3 su = normalize(cross(fabs(sw.x)>0.01f ? float3(0, 1, 0) : float3(1, 0, 0), sw));
+			float3 sv = cross(sw, su);
+			// sample sphere by solid angle
+			// sample light与起点到圆心连线的最大夹角cos值，最大情况是光线与球体相切
+			float cosAMax = sqrtf(1.0f - s.radius*s.radius / ((rec.pos - s.center).length() * (rec.pos - s.center).length()));
+			float eps1 = RandomFloat01(), eps2 = RandomFloat01();
+			// ？？？为什么不直接取eps1 * cosAMax？？？
+			float cosA = 1.0f - eps1 + eps1 * cosAMax;
+			float sinA = sqrtf(1.0f - cosA * cosA);
+			// xy平面的随即方向，用于计算uv的值
+			float phi = 2 * kPI * eps2;
+			float3 l = su * cosf(phi) * sinA + sv * sin(phi) * sinA + sw * cosA;
+			l.normalize();
+
+			// shoot shadow ray
+			Hit lightHit;
+			int hitID;
+			++inoutRayCount;
+			if (HitWorld(Ray(rec.pos, l), kMinT, kMaxT, lightHit, hitID) && hitID == i)
+			{
+				float omega = 2 * kPI * (1 - cosAMax);
+
+				float3 rdir = r_in.dir;
+				float3 nl = dot(rec.normal, rdir) < 0 ? rec.normal : -rec.normal;
+				// 若l与rec.normal夹角大于90，不计算颜色
+				// ???omega的作用看不懂???
+				outLightE += (mat.albedo * smat.emissive) * (std::max(0.0f, dot(l, nl)) * omega / kPI);
+			}
+		}
 
 		return true;
 	}
@@ -103,7 +145,8 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 		{
 			outwardN = -rec.normal;
 			nint = mat.ri;
-			cosine = mat.ri * dot(rdir, rec.normal);
+			//cosine = mat.ri * dot(rdir, rec.normal);
+			cosine = dot(rdir, rec.normal);
 		}
 		else
 		{
