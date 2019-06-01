@@ -96,7 +96,7 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 			// sample light与起点到圆心连线的最大夹角cos值，最大情况是光线与球体相切
 			float cosAMax = sqrtf(1.0f - s.radius*s.radius / ((rec.pos - s.center).length() * (rec.pos - s.center).length()));
 			float eps1 = RandomFloat01(), eps2 = RandomFloat01();
-			// ？？？为什么不直接取eps1 * cosAMax？？？
+			// cosA范围是[cosAMax, 1]，角度比AMax小，因此cos就要比cosAMax大
 			float cosA = 1.0f - eps1 + eps1 * cosAMax;
 			float sinA = sqrtf(1.0f - cosA * cosA);
 			// xy平面的随即方向，用于计算uv的值
@@ -110,12 +110,12 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 			++inoutRayCount;
 			if (HitWorld(Ray(rec.pos, l), kMinT, kMaxT, lightHit, hitID) && hitID == i)
 			{
+				// rec与光源距离越远，omega越小，因此颜色就要越小
 				float omega = 2 * kPI * (1 - cosAMax);
 
 				float3 rdir = r_in.dir;
 				float3 nl = dot(rec.normal, rdir) < 0 ? rec.normal : -rec.normal;
 				// 若l与rec.normal夹角大于90，不计算颜色
-				// ???omega的作用看不懂???
 				outLightE += (mat.albedo * smat.emissive) * (std::max(0.0f, dot(l, nl)) * omega / kPI);
 			}
 		}
