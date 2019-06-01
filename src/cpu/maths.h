@@ -160,6 +160,7 @@ struct Camera
 {
 	Camera(const float3& lookFrom, const float3& lookAt, const float3& vup, float vfov, float aspect, float aperture, float focusDist)
 	{
+		lensRadius = aperture / 2;
 		origin = lookFrom;
 		a = normalize(lookFrom - lookAt);
 		r = normalize(cross(vup, a));
@@ -176,7 +177,9 @@ struct Camera
 
 	Ray GetRay(float x, float y) const
 	{
-		return Ray(origin, normalize(lowerLeftCorner + x * horizontalVec + y * verticalVec - origin));
+		float3 rd = lensRadius * RandomInUnitDisk();
+		float3 offset = r * rd.x + u * rd.y;
+		return Ray(origin + offset, normalize(lowerLeftCorner + x * horizontalVec + y * verticalVec - origin - offset));
 	}
 
 	float3 origin;
@@ -184,4 +187,5 @@ struct Camera
 	float3 lowerLeftCorner;
 	float3 horizontalVec;
 	float3 verticalVec;
+	float lensRadius;
 };

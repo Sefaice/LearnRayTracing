@@ -19,13 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\cpu\main.cpp" />
-    <ClCompile Include="..\..\src\cpu\maths.cpp" />
-    <ClCompile Include="..\..\src\cpu\parallel.cpp" />
+    <None Include="..\..\src\gpu\fragmentShader.fs.glsl" />
+    <None Include="..\..\src\gpu\quadShader.fs.glsl" />
+    <None Include="..\..\src\gpu\quadShader.vs.glsl" />
+    <None Include="..\..\src\gpu\vertexShader.vs.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\cpu\maths.h" />
-    <ClInclude Include="..\..\src\cpu\parallel.h" />
+    <ClCompile Include="..\..\src\gpu\glad.c" />
+    <ClCompile Include="..\..\src\gpu\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\gpu\maths.h" />
+    <ClInclude Include="..\..\src\gpu\shader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -78,7 +83,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>D:\openGL\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\openGL\libs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -87,7 +95,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>D:\enkiTS\enkiTS\enkiTS.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\enkiTS\enkiTS\enkiTS.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

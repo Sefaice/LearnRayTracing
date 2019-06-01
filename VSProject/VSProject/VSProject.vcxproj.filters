@@ -15,21 +15,32 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\cpu\main.cpp">
+    <None Include="..\..\src\gpu\fragmentShader.fs.glsl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="..\..\src\gpu\quadShader.fs.glsl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="..\..\src\gpu\quadShader.vs.glsl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="..\..\src\gpu\vertexShader.vs.glsl">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\gpu\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\cpu\maths.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\cpu\parallel.cpp">
+    <ClCompile Include="..\..\src\gpu\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\cpu\maths.h">
+    <ClInclude Include="..\..\src\gpu\maths.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\cpu\parallel.h">
+    <ClInclude Include="..\..\src\gpu\shader.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
