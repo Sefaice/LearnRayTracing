@@ -8,9 +8,10 @@
 
 const float kMinT = 0.001f;
 const float kMaxT = 1.0e7f;
-
+// trace函数最大调用次数
 const int kMaxDepth = 20;
 
+// 球体位置数据
 static Sphere s_Spheres[] =
 {
 	{ float3(0,-100.5,-1), 100.0f },// 巨大球体作为下方背景
@@ -35,6 +36,7 @@ struct Material
 	float ri; // 反射系数
 };
 
+// 球体材质数据
 static Material s_SphereMats[kSphereCount] =
 {
 	{ Material::Lambert, float3(0.8f, 0.8f, 0.8f), float3(0,0,0), 0, 0, },
@@ -48,6 +50,7 @@ static Material s_SphereMats[kSphereCount] =
 	{ Material::Lambert, float3(0.8f, 0.6f, 0.2f), float3(30,25,15), 0, 0 },
 };
 
+//对于输入的射线，找到它和球体最近的交点，和球体的编号outID
 bool HitWorld(const Ray& r, float tMin, float tMax, Hit& outHit, int& outID)
 {
 	Hit tmpHit;
@@ -56,6 +59,7 @@ bool HitWorld(const Ray& r, float tMin, float tMax, Hit& outHit, int& outID)
 
 	for (int i = 0; i < kSphereCount; ++i)
 	{
+		// HitSphere对球体的射线还有输入参数进行判断，是否为条件内最近射线
 		if (HitSphere(r, s_Spheres[i], tMin, closestT, tmpHit))
 		{
 			ifHit = true;
@@ -68,16 +72,24 @@ bool HitWorld(const Ray& r, float tMin, float tMax, Hit& outHit, int& outID)
 	return ifHit;
 }
 
+// The Scatter function is where material “response” to a ray hitting it is evaluated
+// mat碰撞材质，r_in入射射线，rec碰撞点，attenuation衰减率，scattered碰撞后的光线
+// outLightE是往其他球体发射的shadow ray的颜色值，inoutRayCount计算scatter的次数
 static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3& attenuation, Ray& scattered, float3& outLightE, int& inoutRayCount)
 {
 	outLightE = float3(0.0, 0.0, 0.0);
 	if (mat.type == Material::Lambert)
 	{
-		float3 target = rec.pos + rec.normal + RandomInUnitSphere();
+		// 粗糙材质，漫反射
+		// random point on（inside） unit sphere that is tangent to the hit point
+		// 在沿交点法向量方向的单位外接球上（中）任意选一点作为散射方向
+		//float3 target = rec.pos + rec.normal + RandomInUnitSphere();
+		float3 target = rec.pos + rec.normal + RandomUnitVector();
 		scattered = Ray(rec.pos, normalize(target - rec.pos));
 
 		attenuation = mat.albedo;
 
+		// sample lights，往其他所有会发光的球体发射一条随机射线，最终改变outLightE取到的色值
 		for (int i = 0; i < kSphereCount; ++i)
 		{
 			const Material& smat = s_SphereMats[i];
@@ -124,17 +136,22 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 	}
 	else if (mat.type == Material::Metal)
 	{
+		// 金属材质，镜面反射，角度受到粗糙度roughness影响
 		float3 refl = reflect(r_in.dir, rec.normal);
+		// reflected ray, and random inside of sphere based on roughness
 		scattered = Ray(rec.pos, normalize(refl + mat.roughness*RandomInUnitSphere()));
 
 		attenuation = mat.albedo;
 		
+		// ray might get scattered "into" the surface, absorb it then，因为加了随机球内偏移
 		return dot(scattered.dir, rec.normal) > 0;
 	}
 	else if (mat.type == Material::Dielectric)
 	{
+		// 透明材质，镜面反射和折射
 		float3 outwardN;
 		float3 rdir = r_in.dir;
+		// 这里没有区分入射和出射就直接计算反射，两种情况N方向相反，但计算结果由于正负号相抵，没有影响
 		float3 refl = reflect(rdir, rec.normal);
 		float nint;
 	
@@ -143,6 +160,7 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 		float cosine;
 		if (dot(rdir, rec.normal) > 0)
 		{
+			// 入射光线和法线夹角小于90度，说明光线射出球体(碰撞点法向量始终指向球外)
 			outwardN = -rec.normal;
 			nint = mat.ri;
 			//cosine = mat.ri * dot(rdir, rec.normal);
@@ -150,11 +168,13 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 		}
 		else
 		{
+			// 夹角大于90度，射入球体
 			outwardN = rec.normal;
 			nint = 1.0f / mat.ri;
 			cosine = -dot(rdir, rec.normal);
 		}
 
+		// ri用哪个计算结果都一样，cos这里应该是用了近似
 		if (refract(rdir, outwardN, nint, refr))
 		{
 			reflProb = schlick(cosine, mat.ri);
@@ -175,6 +195,8 @@ static bool Scatter(const Material& mat, const Ray& r_in, const Hit& rec, float3
 	return true;
 }
 
+// “Main work” of path tracer itself is Trace function
+// r选取的光线，depth已经碰撞的次数，inoutRayCount记录计算反射/折射的总次数，最终返回值是这射线与屏幕交点/像素点对应的色值（0-1之间）
 static float3 Trace(const Ray& r, int depth, int& inoutRayCount)
 {
 	Hit rec;
@@ -198,7 +220,9 @@ static float3 Trace(const Ray& r, int depth, int& inoutRayCount)
 	}
 	else
 	{
-		return float3(0.5f, 0.7f, 1.0f);
+		float3 unitDir = r.dir;
+		float t = 0.5f*(unitDir.y + 1.0f);
+		return ((1.0f - t)*float3(1.0f, 1.0f, 1.0f) + t * float3(0.5f, 0.7f, 1.0f)) * 0.3f;
 	}
 }
 
@@ -226,6 +250,7 @@ struct JobData
 	std::atomic<int> rayCount;
 };
 
+// 多线程，分row计算，start和end指startrow和endrow
 static void TraceRowJob(uint32_t start, uint32_t end, uint32_t threadnum, void* data_)
 {
 	JobData& data = *(JobData*)data_;
@@ -243,8 +268,9 @@ static void TraceRowJob(uint32_t start, uint32_t end, uint32_t threadnum, void* 
 		for (int x = 0; x < data.screenWidth; ++x)
 		{
 			float3 col(0, 0, 0);
-			float u = float(x) * invWidth;
-			float v = float(y) * invHeight;
+			// u，v是最终显示的屏幕中像素点所占的宽高比例
+			float u = float(x + RandomFloat01()) * invWidth;
+			float v = float(y + RandomFloat01()) * invHeight;
 			Ray r = data.cam->GetRay(u, v);
 
 			col = Trace(r, 0, rayCount);
@@ -267,6 +293,7 @@ static void TraceRowJob(uint32_t start, uint32_t end, uint32_t threadnum, void* 
 	data.rayCount += rayCount;
 }
 
+// 调用多线程。screenWidth和screenHeight是最终显示的屏幕宽高
 void DrawTest(float time, int frameCount, int screenWidth, int screenHeight, float* backbuffer, int& outRayCount)
 {
 	float3 lookfrom(0, 2, 3);

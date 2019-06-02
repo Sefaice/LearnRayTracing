@@ -25,10 +25,11 @@ uniform sampler2D LastColorTexture;
 const int SCR_WIDTH = 1280;
 const int SCR_HEIGHT = 720;
 
+const int DO_SAMPLES_PER_PIXEL = 4;
+
 const float kMinT = 0.001f;
 const float kMaxT = 1.0e7f;
 const int kMaxDepth = 20;
-
 const float kPI = 3.1415926f;
 
 /* structs  */
@@ -218,7 +219,7 @@ bool Scatter(const Material mat, const Ray r_in, const Hit rec, inout vec3 atten
     outLightE = vec3(0,0,0);
     if (mat.type == Lambert)
     {
-        vec3 target = rec.pos + rec.normal + RandomInUnitSphere(state);
+        vec3 target = rec.pos + rec.normal + RandomUnitVector(state);
         //vec3 target = rec.pos + rec.normal;
         scattered = Ray(rec.pos, normalize(target - rec.pos));
 
@@ -314,6 +315,8 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 	vec3 resultColor = vec3(0.0);
 	vec3 iteAttenuation = vec3(1.0);
 
+	bool doMaterialE = true;
+
 	while(true)
 	{
 		Hit rec;
@@ -329,6 +332,9 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 
 			if (depth < kMaxDepth && Scatter(mat, r, rec, attenuation,  scattered, lightE, state))
 			{
+				if (!doMaterialE) matE = vec3(0.0);
+				doMaterialE = (mat.type != Lambert);
+
 				resultColor += iteAttenuation * (matE + lightE);
 				iteAttenuation *= attenuation;
 				r = scattered;
@@ -343,7 +349,13 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 		}
 		else // miss
 		{
-			resultColor += iteAttenuation * vec3(0.5f, 0.7f, 1.0f);
+			vec3 unitDir = r.dir;
+			float t = 0.5f * (unitDir.y + 1.0f);
+			// the same as dot product below
+			// float t = 0.5f * (dot(vec3(0, 1, 0), unitDir) + 1.0f);
+			resultColor += iteAttenuation * ((1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f)) * 0.3f;
+
+			//resultColor += iteAttenuation * vec3(0.5f, 0.7f, 1.0f);
 			break;
 		}
 	}
@@ -360,12 +372,11 @@ float LinearToSRGB(float x)
 
 void main()
 {
-	float x = gl_FragCoord.x / SCR_WIDTH;
-	float y = gl_FragCoord.y / SCR_HEIGHT;
-	
 	uint state = uint(int(gl_FragCoord.x * time * 9781 + gl_FragCoord.y * time * 6271) | 1);
 	//state = uint(int(gl_FragCoord.x * 1973 + gl_FragCoord.y * 9277 + frameCount * 26699) | 1);
 
+	float x = (gl_FragCoord.x + RandomFloat01(state)) / SCR_WIDTH;
+	float y = (gl_FragCoord.y + RandomFloat01(state))  / SCR_HEIGHT;
 
 	vec3 rd = lensRadius * RandomInUnitDisk(state);
 	vec3 offset = u * rd.x + v * rd.y;
@@ -373,7 +384,13 @@ void main()
 	vec3 rayDir = normalize(lowerLeftCorner + x * horizontalVec + y * verticalVec - origin - offset);
 	Ray r = Ray(rayOrigin, rayDir);
 
-	vec3 resultColor = TraceLoop(r, 0, state);
+	vec3 resultColor = vec3(0.0);
+	for(int i = 0; i < DO_SAMPLES_PER_PIXEL; i++)
+	{
+		resultColor += TraceLoop(r, 0, state);
+	}
+	resultColor *= 1.0f / float(DO_SAMPLES_PER_PIXEL); 
+
 	resultColor = vec3(LinearToSRGB(resultColor.x), LinearToSRGB(resultColor.y), LinearToSRGB(resultColor.z));
 
 	float lerpFac = float(frameCount) / float(frameCount + 1);

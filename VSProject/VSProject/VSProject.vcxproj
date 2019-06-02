@@ -19,14 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\gpu\glad.c" />
+    <ClCompile Include="..\..\src\gpu\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\src\gpu\fragmentShader.fs.glsl" />
     <None Include="..\..\src\gpu\quadShader.fs.glsl" />
     <None Include="..\..\src\gpu\quadShader.vs.glsl" />
     <None Include="..\..\src\gpu\vertexShader.vs.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\gpu\glad.c" />
-    <ClCompile Include="..\..\src\gpu\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gpu\maths.h" />
