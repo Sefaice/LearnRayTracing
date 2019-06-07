@@ -25,15 +25,16 @@ uniform sampler2D LastColorTexture;
 const int SCR_WIDTH = 1280;
 const int SCR_HEIGHT = 720;
 
-const int DO_SAMPLES_PER_PIXEL = 4;
+const int DO_SAMPLES_PER_PIXEL = 10;
 
 const float kMinT = 0.001f;
 const float kMaxT = 1.0e7f;
 const int kMaxDepth = 20;
 const float kPI = 3.1415926f;
 
-/* structs  */
-/* -------- */
+/* --------------------------------------------------------- */
+/* ------------------------ structs ------------------------ */
+/* --------------------------------------------------------- */
 
 struct Ray
 {
@@ -48,12 +49,6 @@ struct Hit
 	float t;
 };
 
-struct Sphere
-{
-	vec3 center;
-	float radius;
-};
-
 struct ScatterData
 {
 	Ray scatteredRay;
@@ -61,19 +56,38 @@ struct ScatterData
 	vec3 attenuation;
 };
 
-const Sphere s_Spheres[] = Sphere[]
-(
-	Sphere(vec3(0,-100.5,-1), 100.0f),// 巨大球体作为下方背景
-	Sphere(vec3(2,1,-1), 0.5f),// 后排最右红色
-	Sphere(vec3(0,0,-1), 0.5f),
-	Sphere(vec3(-2,0,-1), 0.5f),
-	Sphere(vec3(2,0,1), 0.5f),
-	Sphere(vec3(0,0,1), 0.5f),
-	Sphere(vec3(-2,0,1), 0.5f),
-	Sphere(vec3(0.5f,1,0.5f), 0.5f),// 玻璃球
-	Sphere(vec3(-1.5f,1.5f,0.f), 0.3f)// 白色
-);
+//struct Sphere
+//{
+//	vec3 center;
+//	float radiusSq;
+//};
+
+//const Sphere s_Spheres[] = Sphere[]
+//(
+//	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
+//	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
+//	Sphere(vec3(0,0,-1), 0.25f),
+//	Sphere(vec3(-2,0,-1), 0.25f),
+//	Sphere(vec3(2,0,1), 0.25f),
+//	Sphere(vec3(0,0,1), 0.25f),
+//	Sphere(vec3(-2,0,1), 0.25f),
+//	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
+//	Sphere(vec3(-1.5f,1.5f,0.f), 0.09f)// 白色
+//);
+
 const int kSphereCount = 9;
+
+struct SpheresSoA
+{
+    vec3[kSphereCount]  center;
+    float[kSphereCount] radiusSq;
+};
+
+const SpheresSoA s_SpheresSoA = SpheresSoA
+(
+	vec3[](vec3(0,-100.5,-1), vec3(2,1,-1), vec3(0,0,-1), vec3(-2,0,-1), vec3(2,0,1), vec3(0,0,1), vec3(-2,0,1), vec3(0.5f,1,0.5f), vec3(-1.5f,1.5f,0.f)),
+	float[](10000.0f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.09f)
+);
 
 const uint Lambert     = 0x00000001u;
 const uint Metal       = 0x00000002u;
@@ -151,40 +165,82 @@ vec3 RandomUnitVector(inout uint state)
     return vec3(x, y, z);
 }
 
-bool HitSphere(const Ray r, const Sphere s, float tMin, float tMax, inout Hit outHit)
+//bool HitSphere(const Ray r, const Sphere s, float tMin, float tMax, inout Hit outHit)
+//{
+//	vec3 rs = s.center - r.orig;
+//
+//	float rsProj = dot(rs, r.dir);
+//	float ifHit = dot(rs, rs) - rsProj * rsProj - s.radiusSq;
+//
+//	if (ifHit < 0.0f)
+//	{
+//		float halfCut = sqrt(-ifHit);
+//		float t;
+//
+//		t = rsProj - halfCut;
+//		if (t > tMin && t < tMax)
+//		{
+//			outHit.pos = r.orig + r.dir * t;
+//			outHit.normal = normalize(outHit.pos - s.center);
+//			outHit.t = t;
+//
+//			return true;
+//		}
+//
+//		t = rsProj + halfCut;
+//		if (t > tMin && t < tMax)
+//		{
+//			outHit.pos = r.orig + r.dir * t;
+//			outHit.normal = normalize(outHit.pos - s.center);
+//			outHit.t = t;
+//
+//			return true;
+//		}
+//	}
+//
+//	return false;
+//}
+
+int HitSpheres(const Ray r, const SpheresSoA spheres, float tMin, float tMax, inout Hit outHit)
 {
-	vec3 rs = s.center - r.orig;
+	Hit tmpHit;
+    int id = -1;
+    float closest = tMax;
+    for (int i = 0; i < kSphereCount; ++i)
+    {
+		vec3 rs = spheres.center[i] - r.orig;
 
-	float rsProj = dot(rs, r.dir);
-	float ifHit = dot(rs, rs) - rsProj * rsProj - s.radius * s.radius;
+		float rsProj = dot(rs, r.dir);
+		float ifHit = dot(rs, rs) - rsProj * rsProj - spheres.radiusSq[i];
 
-	if (ifHit < 0.0f)
-	{
-		float halfCut = sqrt(-ifHit);
-		float t;
+        if (ifHit < 0.0f)
+        {
+			float halfCut = sqrt(-ifHit);
+			float t = rsProj - halfCut;
 
-		t = rsProj - halfCut;
-		if (t > tMin && t < tMax)
-		{
-			outHit.pos = r.orig + r.dir * t;
-			outHit.normal = normalize(outHit.pos - s.center);
-			outHit.t = t;
+            if (t > tMin && t < tMax && t < closest)
+            {
+                id = i;
+                closest = t;
+                tmpHit.pos = r.orig + r.dir * t;
+                tmpHit.normal = normalize(tmpHit.pos - spheres.center[i]);
+                tmpHit.t = t;
+            }
 
-			return true;
-		}
+            t = rsProj + halfCut;
+			if (t > tMin && t < tMax && t < closest)
+            {
+                id = i;
+                closest = t;
+                tmpHit.pos = r.orig + r.dir * t;
+                tmpHit.normal = normalize(tmpHit.pos - spheres.center[i]);
+                tmpHit.t = t;
+            }
+        }
+    }
 
-		t = rsProj + halfCut;
-		if (t > tMin && t < tMax)
-		{
-			outHit.pos = r.orig + r.dir * t;
-			outHit.normal = normalize(outHit.pos - s.center);
-			outHit.t = t;
-
-			return true;
-		}
-	}
-
-	return false;
+	outHit = tmpHit;
+    return id;
 }
 
 float schlick(float cosine, float ri)
@@ -194,24 +250,30 @@ float schlick(float cosine, float ri)
 	return r0 + (1 - r0) * pow(1 - cosine, 5);
 }
 
+//bool HitWorld(const Ray r, float tMin, float tMax, inout Hit outHit, inout int outID)
+//{
+//	Hit tmpHit;
+//	bool ifHit = false;
+//	float closestT = tMax;
+//
+//	for (int i = 0; i < kSphereCount; ++i)
+//	{
+//		if (HitSphere(r, s_Spheres[i], tMin, closestT, tmpHit))
+//		{
+//			ifHit = true;
+//			outHit = tmpHit;
+//			closestT = tmpHit.t;
+//			outID = i;
+//		}
+//	}
+//
+//	return ifHit;
+//}
+
 bool HitWorld(const Ray r, float tMin, float tMax, inout Hit outHit, inout int outID)
 {
-	Hit tmpHit;
-	bool ifHit = false;
-	float closestT = tMax;
-
-	for (int i = 0; i < kSphereCount; ++i)
-	{
-		if (HitSphere(r, s_Spheres[i], tMin, closestT, tmpHit))
-		{
-			ifHit = true;
-			outHit = tmpHit;
-			closestT = tmpHit.t;
-			outID = i;
-		}
-	}
-
-	return ifHit;
+	outID = HitSpheres(r, s_SpheresSoA, tMin, tMax, outHit);
+	return outID != -1;
 }
 
 bool Scatter(const Material mat, const Ray r_in, const Hit rec, inout vec3 attenuation, inout Ray scattered, inout vec3 outLightE, inout uint state)
@@ -232,13 +294,12 @@ bool Scatter(const Material mat, const Ray r_in, const Hit rec, inout vec3 atten
 				continue;
 			if (mat == smat)
 				continue;
-			Sphere s = s_Spheres[i];
 
-			vec3 sw = normalize(s.center - rec.pos);
+			vec3 sw = normalize(s_SpheresSoA.center[i] - rec.pos);
 			vec3 su = normalize(cross(abs(sw.x) > 0.01f ? vec3(0, 1, 0) : vec3(1, 0, 0), sw));
 			vec3 sv = cross(sw, su);
 
-			float cosAMax = sqrt(1.0f - s.radius*s.radius / dot(rec.pos - s.center, rec.pos - s.center));
+			float cosAMax = sqrt(1.0f - s_SpheresSoA.radiusSq[i] / dot(rec.pos - s_SpheresSoA.center[i], rec.pos - s_SpheresSoA.center[i]));
 			float eps1 = RandomFloat01(state), eps2 = RandomFloat01(state);
 			float cosA = 1.0f - eps1 + eps1 * cosAMax;
 			float sinA = sqrt(1.0f - cosA * cosA);

@@ -48,10 +48,11 @@ SIMD：Single instruction, multiple data。
 
 第二种是开启MSVC（微软的VC编译器）的 /fp:fast模式。
 
+这些优化主要是针对CPU进行的，提高并行度。
 
 ### SOA
 
-SOA：sturuct of arrays，在结构体中对所有成员存储数组。与之相对的，常用的是AOS：array of structs，一个结构体所有实例的数组。使用SOA可以在内存访问成员时移动更少的距离，比如找到所有球体的半径变量，在使用SOA内存上是连续存储的。
+SOA：sturuct of arrays，在结构体中对所有成员存储数组。与之相对的，常用的是AOS：array of structs，一个结构体所有实例的数组。使用SOA可以在内存访问成员时移动更少的距离，比如找到所有球体的半径变量，在使用SOA内存上是连续存储的。另外一个小优化是存储半径的平方：计算时只用到平方。
 
 ---
 
