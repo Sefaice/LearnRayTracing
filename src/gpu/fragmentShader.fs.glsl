@@ -56,24 +56,24 @@ struct ScatterData
 	vec3 attenuation;
 };
 
-//struct Sphere
-//{
-//	vec3 center;
-//	float radiusSq;
-//};
+struct Sphere
+{
+	vec3 center;
+	float radiusSq;
+};
 
-//const Sphere s_Spheres[] = Sphere[]
-//(
-//	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
-//	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
-//	Sphere(vec3(0,0,-1), 0.25f),
-//	Sphere(vec3(-2,0,-1), 0.25f),
-//	Sphere(vec3(2,0,1), 0.25f),
-//	Sphere(vec3(0,0,1), 0.25f),
-//	Sphere(vec3(-2,0,1), 0.25f),
-//	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
-//	Sphere(vec3(-1.5f,1.5f,0.f), 0.09f)// 白色
-//);
+const Sphere s_Spheres[] = Sphere[]
+(
+	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
+	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
+	Sphere(vec3(0,0,-1), 0.25f),
+	Sphere(vec3(-2,0,-1), 0.25f),
+	Sphere(vec3(2,0,1), 0.25f),
+	Sphere(vec3(0,0,1), 0.25f),
+	Sphere(vec3(-2,0,1), 0.25f),
+	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
+	Sphere(vec3(-1.5f,1.5f,0.f), 0.09f)// 白色
+);
 
 const int kSphereCount = 9;
 
@@ -83,11 +83,7 @@ struct SpheresSoA
     float[kSphereCount] radiusSq;
 };
 
-const SpheresSoA s_SpheresSoA = SpheresSoA
-(
-	vec3[](vec3(0,-100.5,-1), vec3(2,1,-1), vec3(0,0,-1), vec3(-2,0,-1), vec3(2,0,1), vec3(0,0,1), vec3(-2,0,1), vec3(0.5f,1,0.5f), vec3(-1.5f,1.5f,0.f)),
-	float[](10000.0f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.09f)
-);
+SpheresSoA s_SpheresSoA;
 
 const uint Lambert     = 0x00000001u;
 const uint Metal       = 0x00000002u;
@@ -113,6 +109,9 @@ const Material s_SphereMats[] = Material[]
     Material( Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0,0,0), 0, 1.5f ),
     Material( Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(30,25,15), 0, 0 )
 );
+
+const int emissiveCount = 1;
+const int emissiveSpheres[] = int[](8);
 
 /* ------------------------------------------------------- */
 /* ------------------------ funcs ------------------------ */
@@ -287,29 +286,29 @@ bool Scatter(const Material mat, const Ray r_in, const Hit rec, inout vec3 atten
 
         attenuation = mat.albedo;
 
-		for (int i = 0; i < kSphereCount; ++i)
+		// light sampling
+		for (int j = 0; j < emissiveCount; ++j)
 		{
+			int i = emissiveSpheres[j];
 			Material smat = s_SphereMats[i];
-			if (smat.emissive.x <= 0 && smat.emissive.y <= 0 && smat.emissive.z <= 0)
-				continue;
 			if (mat == smat)
 				continue;
+			Sphere s = s_Spheres[i];
 
-			vec3 sw = normalize(s_SpheresSoA.center[i] - rec.pos);
+			vec3 sw = normalize(s.center - rec.pos);
 			vec3 su = normalize(cross(abs(sw.x) > 0.01f ? vec3(0, 1, 0) : vec3(1, 0, 0), sw));
 			vec3 sv = cross(sw, su);
 
-			float cosAMax = sqrt(1.0f - s_SpheresSoA.radiusSq[i] / dot(rec.pos - s_SpheresSoA.center[i], rec.pos - s_SpheresSoA.center[i]));
+			float cosAMax = sqrt(1.0f - s.radiusSq / dot(rec.pos - s.center, rec.pos - s.center));
 			float eps1 = RandomFloat01(state), eps2 = RandomFloat01(state);
 			float cosA = 1.0f - eps1 + eps1 * cosAMax;
 			float sinA = sqrt(1.0f - cosA * cosA);
 			float phi = 2 * kPI * eps2;
 			vec3 l = su * cos(phi) * sinA + sv * sin(phi) * sinA + sw * cosA;
-			l = normalize(l);
+			//l = normalize(l); l already normalized
 
 			Hit lightHit;
 			int hitID;
-			//++inoutRayCount;
 			if (HitWorld(Ray(rec.pos, l), kMinT, kMaxT, lightHit, hitID) && hitID == i)
 			{
 				float omega = 2 * kPI * (1 - cosAMax);
@@ -318,7 +317,6 @@ bool Scatter(const Material mat, const Ray r_in, const Hit rec, inout vec3 atten
 
 				outLightE += (mat.albedo * smat.emissive) * (max(0.0f, dot(l, nl)) * omega / kPI);
 			}
-			
 		}
 
 		return true;
@@ -433,6 +431,13 @@ float LinearToSRGB(float x)
 
 void main()
 {
+	// init spheresSoA
+	for(int i = 0; i < kSphereCount; i++)
+	{
+		s_SpheresSoA.center[i] = s_Spheres[i].center;
+		s_SpheresSoA.radiusSq[i] = s_Spheres[i].radiusSq;
+	}
+
 	uint state = uint(int(gl_FragCoord.x * time * 9781 + gl_FragCoord.y * time * 6271) | 1);
 	//state = uint(int(gl_FragCoord.x * 1973 + gl_FragCoord.y * 9277 + frameCount * 26699) | 1);
 
