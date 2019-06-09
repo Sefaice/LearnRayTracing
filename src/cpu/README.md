@@ -209,7 +209,5 @@ explicit light sampling / shadow rays方法可以改善这个问题：在现有�
 
 ---
 
-## Problems
-
-
+博客里的后续bug解决都在GPU实现中修改了，后续的SIMD优化还待学习。
 
