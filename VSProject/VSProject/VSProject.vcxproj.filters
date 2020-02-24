@@ -43,5 +43,8 @@
     <ClInclude Include="..\..\src\gpu\shader.h">
       <Filter>源文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\gpu\utils.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,9 +16,11 @@
 
 #include "./shader.h"
 #include "./maths.h"
+#include "./utils.h"
 
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
 
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
@@ -99,8 +101,9 @@ int main()
 		lastFrame = currentFrame;
 		// show FPS
 		int fps = 1 / deltaTime;
-		glfwSetWindowTitle(window, ("FPS: " + std::to_string(fps)).c_str());
-		
+		//glfwSetWindowTitle(window, ("FPS: " + std::to_string(fps)).c_str());
+		glfwSetWindowTitle(window, ("Frame Count: " + std::to_string(frameCount)).c_str());
+
 		processInput(window);
 
 		// render into switched framebuffer
@@ -150,12 +153,22 @@ int main()
 
 		frameCount++;
 
+		// save {2, 4, 8, 16...} spp image
+		if ((frameCount & frameCount - 1) == 0) {
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			BYTE* raw_img = (BYTE*)malloc(sizeof(BYTE) * SCR_WIDTH * SCR_HEIGHT * 3);
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, raw_img);
+			saveTextureToBMP(SCR_WIDTH, SCR_HEIGHT, raw_img, 
+				("../../src/gpu_out/spp_" + std::to_string(frameCount) + ".bmp").c_str());
+		}
+
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 
 	glfwTerminate();
 
+	system("Pause");
 	return 0;
 }
 

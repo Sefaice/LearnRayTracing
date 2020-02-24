@@ -31,6 +31,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\gpu\maths.h" />
     <ClInclude Include="..\..\src\gpu\shader.h" />
+    <ClInclude Include="..\..\src\gpu\utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
