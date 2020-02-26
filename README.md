@@ -2,6 +2,6 @@
 
 [http://aras-p.info/blog/2018/03/28/Daily-Pathtracer-Part-0-Intro/](http://aras-p.info/blog/2018/03/28/Daily-Pathtracer-Part-0-Intro/)
 
-[cpu](https://github.com/Sefaice/LearnRayTracing/tree/master/src/cpu)
+[CPU实现](https://github.com/Sefaice/LearnRayTracing/tree/master/src/cpu), WINDOWS GDI
 
-[gpu](https://github.com/Sefaice/LearnRayTracing/tree/master/src/gpu)
+[GPU实现](https://github.com/Sefaice/LearnRayTracing/tree/master/src/gpu), OpenGL

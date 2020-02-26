@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void saveTextureToBMP(int w, int h, unsigned char* img, const char* path) {
+void saveTextureToBMP(int w, int h, uint8_t* img, const char* path) {
     FILE* f = NULL;
     int filesize = 54 + 3 * w * h;  //w is your image width, h is image height, both int
    
@@ -27,30 +27,73 @@ void saveTextureToBMP(int w, int h, unsigned char* img, const char* path) {
     bmpinfoheader[10] = (unsigned char)(h >> 16);
     bmpinfoheader[11] = (unsigned char)(h >> 24);
 
-    // flop axis and RGB channels
+    // flip RGB channels, BMP stores BGR?
     int imgsize = 3 * w * h;
     unsigned char* oimg = (unsigned char*)malloc(3 * w * h);
-    for (int i = 0; i < imgsize; i++) {
-        oimg[i] = img[imgsize - 1 - i];
+    for (int j = 0; j < h; j++) {
+        for (int i = 0; i < w; i++) {
+            oimg[j * w * 3 + i * 3] = img[j * w * 3 + i * 3 + 2];
+            oimg[j * w * 3 + i * 3 + 1] = img[j * w * 3 + i * 3 + 1];
+            oimg[j * w * 3 + i * 3 + 2] = img[j * w * 3 + i * 3];
+        }
     }
 
     // write
     errno_t err;
     err = fopen_s(&f, path, "wb");
-    if (err == 0)
-    {
+    if (err == 0) {
         printf("The file was opened\n");
         fwrite(bmpfileheader, 1, 14, f);
         fwrite(bmpinfoheader, 1, 40, f);
         for (int i = 0; i < h; i++)
         {
-            fwrite(oimg + (w * (h - i - 1) * 3), 3, w, f);
+            fwrite(oimg + (i * w * 3), 3, w, f);
             fwrite(bmppad, 1, (4 - (w * 3) % 4) % 4, f);
         }
         fclose(f);
     }
-    else
-    {
+    else {
         printf("The was not opened\n");
+    }
+}
+
+void saveTextureToBinary_uint8(int w, int h, uint8_t* data, const char* path) {
+   /* printf("TheEEEEEEEE %d", strlen(data));*/
+
+    // write
+    FILE* f = NULL;
+    errno_t err;
+    err = fopen_s(&f, path, "wb");
+    if (err == 0) {
+        printf("The file was opened\n");
+        for (int i = 0; i < h; i++)
+        {
+            fwrite(data + (h - i - 1) * w * 3, 3, w, f);
+        }
+        fclose(f);
+    }
+    else {
+        printf("The file was not opened\n");
+    }
+}
+
+
+void saveTextureToBinary_float(int w, int h, float* data, const char* path) {
+    /* printf("TheEEEEEEEE %d", strlen(data));*/
+
+    // write
+    FILE* f = NULL;
+    errno_t err;
+    err = fopen_s(&f, path, "wb");
+    if (err == 0) {
+        printf("The file was opened\n");
+        for (int i = 0; i < h; i++)
+        {
+            fwrite(data + (h - i - 1) * w * 3, 12, w, f);
+        }
+        fclose(f);
+    }
+    else {
+        printf("The file was not opened\n");
     }
 }

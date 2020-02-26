@@ -1,6 +1,9 @@
 #version 330 core
 
-out vec4 fColor;
+//out vec4 fColor;
+layout(location = 0) out vec4 fColor;
+layout(location = 1) out vec4 fNormal;
+layout(location = 2) out vec4 fWorldPos;
 
 in vec2 TexCoords;
 
@@ -18,19 +21,25 @@ uniform float lensRadius;
 uniform float time;
 uniform int frameCount;
 uniform sampler2D LastColorTexture;
+uniform sampler2D LastNormalTexture;
+
+uniform int SCR_WIDTH;
+uniform int SCR_HEIGHT;
 
 /* const vars */
-/* -------- */
+/* ---------- */
 
-const int SCR_WIDTH = 1280;
-const int SCR_HEIGHT = 720;
-
-const int DO_SAMPLES_PER_PIXEL = 10;
+const int DO_SAMPLES_PER_PIXEL = 1;
 
 const float kMinT = 0.001f;
 const float kMaxT = 1.0e7f;
 const int kMaxDepth = 20;
 const float kPI = 3.1415926f;
+
+/* global vars */
+/* ----------- */
+
+int writeFeatures = 1;
 
 /* --------------------------------------------------------- */
 /* ------------------------ structs ------------------------ */
@@ -65,6 +74,7 @@ struct Sphere
 const Sphere s_Spheres[] = Sphere[]
 (
 	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
+	Sphere(vec3(0, 0, -105), 10000.0f),
 	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
 	Sphere(vec3(0,0,-1), 0.25f),
 	Sphere(vec3(-2,0,-1), 0.25f),
@@ -72,10 +82,10 @@ const Sphere s_Spheres[] = Sphere[]
 	Sphere(vec3(0,0,1), 0.25f),
 	Sphere(vec3(-2,0,1), 0.25f),
 	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
-	Sphere(vec3(-1.5f,1.5f,0.f), 0.09f)// 白色
+	Sphere(vec3(-1.5f,2.5f,0.f), 0.09f)// 白色
 );
 
-const int kSphereCount = 9;
+const int kSphereCount = 10;
 
 struct SpheresSoA
 {
@@ -100,6 +110,7 @@ struct Material
 const Material s_SphereMats[] = Material[]
 (
     Material( Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0,0,0), 0, 0),
+	Material(Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
     Material( Lambert, vec3(0.8f, 0.4f, 0.4f), vec3(0,0,0), 0, 0),
     Material( Lambert, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0, 0),
     Material( Metal, vec3(0.4f, 0.4f, 0.8f), vec3(0,0,0), 0, 0 ),
@@ -107,11 +118,11 @@ const Material s_SphereMats[] = Material[]
     Material( Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0.2f, 0 ),
     Material( Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0.6f, 0 ),
     Material( Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0,0,0), 0, 1.5f ),
-    Material( Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(30,25,15), 0, 0 )
+    Material( Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(40,30,20), 0, 0 )
 );
 
 const int emissiveCount = 1;
-const int emissiveSpheres[] = int[](8);
+const int emissiveSpheres[] = int[](9);
 
 /* ------------------------------------------------------- */
 /* ------------------------ funcs ------------------------ */
@@ -388,6 +399,14 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 		    vec3 lightE;
 			Material mat = s_SphereMats[id];
 			vec3 matE = mat.emissive;
+			// write to normal texture
+			if (writeFeatures == 1)
+			{
+				fNormal = vec4(rec.normal, 1.0);
+				fWorldPos = vec4(rec.pos, 1.0);
+				writeFeatures = 0;
+			}
+
 
 			if (depth < kMaxDepth && Scatter(mat, r, rec, attenuation,  scattered, lightE, state))
 			{
@@ -459,10 +478,13 @@ void main()
 
 	resultColor = vec3(LinearToSRGB(resultColor.x), LinearToSRGB(resultColor.y), LinearToSRGB(resultColor.z));
 
+	// lerp color
 	float lerpFac = float(frameCount) / float(frameCount + 1);
 	vec3 lastColor = texture(LastColorTexture, TexCoords).rgb;
 	resultColor = lastColor * lerpFac + resultColor * (1 - lerpFac);
-
 	fColor = vec4(resultColor, 1.0);
-
+	// lerp normal
+	vec3 lastNormal = texture(LastNormalTexture, TexCoords).rgb;
+	vec3 resultNormal = lastNormal * lerpFac + fNormal.rgb * (1 - lerpFac);
+	fNormal = vec4(resultNormal, 1.0);
 }
