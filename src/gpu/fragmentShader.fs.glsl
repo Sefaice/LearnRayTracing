@@ -4,6 +4,9 @@
 layout(location = 0) out vec4 fColor;
 layout(location = 1) out vec4 fNormal;
 layout(location = 2) out vec4 fWorldPos;
+layout(location = 3) out vec4 fColorStdvar;
+layout(location = 4) out vec4 fNormalStdvar;
+layout(location = 5) out vec4 fWorldPosStdvar;
 
 in vec2 TexCoords;
 
@@ -22,6 +25,10 @@ uniform float time;
 uniform int frameCount;
 uniform sampler2D LastColorTexture;
 uniform sampler2D LastNormalTexture;
+uniform sampler2D LastWorldPosTexture;
+uniform sampler2D LastColorStdvarTexture;
+uniform sampler2D LastNormalStdvarTexture;
+uniform sampler2D LastWorldPosStdvarTexture;
 
 uniform int SCR_WIDTH;
 uniform int SCR_HEIGHT;
@@ -40,6 +47,8 @@ const float kPI = 3.1415926f;
 /* ----------- */
 
 int writeFeatures = 1;
+vec3 resultNormal = vec3(0, 0, 0);
+vec3 resultWorldPos = vec3(0, 0, 0);
 
 /* --------------------------------------------------------- */
 /* ------------------------ structs ------------------------ */
@@ -402,8 +411,8 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 			// write to normal texture
 			if (writeFeatures == 1)
 			{
-				fNormal = vec4(rec.normal, 1.0);
-				fWorldPos = vec4(rec.pos, 1.0);
+				resultNormal = rec.normal;
+				resultWorldPos = rec.pos;
 				writeFeatures = 0;
 			}
 
@@ -448,6 +457,19 @@ float LinearToSRGB(float x)
 	return x;
 }
 
+float AdaptiveStdvar(float lastStdvar, float lastMean, int n, float newVal, float newMean)
+{
+	return sqrt((n * pow(lastStdvar, 2) + n * pow(lastMean - newMean, 2) + pow(newVal - newMean, 2)) / (n + 1));
+}
+
+vec3 AdaptiveStdvar_Vec3(vec3 lastStdvar, vec3 lastMean, int n, vec3 newVal, vec3 newMean) 
+{
+	float resultx = AdaptiveStdvar(lastStdvar.x, lastMean.x, n, newVal.x, newMean.x);
+	float resulty = AdaptiveStdvar(lastStdvar.y, lastMean.y, n, newVal.y, newMean.y);
+	float resultz = AdaptiveStdvar(lastStdvar.z, lastMean.z, n, newVal.z, newMean.z);
+	return vec3(resultx, resulty, resultz);
+}
+
 void main()
 {
 	// init spheresSoA
@@ -481,10 +503,27 @@ void main()
 	// lerp color
 	float lerpFac = float(frameCount) / float(frameCount + 1);
 	vec3 lastColor = texture(LastColorTexture, TexCoords).rgb;
-	resultColor = lastColor * lerpFac + resultColor * (1 - lerpFac);
-	fColor = vec4(resultColor, 1.0);
+	vec3 colorMean = lastColor * lerpFac + resultColor * (1 - lerpFac);
+	fColor = vec4(colorMean, 1.0);
+	// the rest is for generating grad proj data
 	// lerp normal
 	vec3 lastNormal = texture(LastNormalTexture, TexCoords).rgb;
-	vec3 resultNormal = lastNormal * lerpFac + fNormal.rgb * (1 - lerpFac);
-	fNormal = vec4(resultNormal, 1.0);
+	vec3 normalMean = lastNormal * lerpFac + resultNormal * (1 - lerpFac);
+	fNormal = vec4(normalMean, 1.0);
+	// lerp worldpos
+	vec3 lastWorldPos = texture(LastWorldPosTexture, TexCoords).rgb;
+	vec3 worldPosMean = lastWorldPos * lerpFac + resultWorldPos * (1 - lerpFac);
+	fWorldPos = vec4(worldPosMean, 1.0);
+	// calc color std var
+	vec3 lastColorStdvar = texture(LastColorStdvarTexture, TexCoords).rgb;
+	vec3 resultColorStdvar = AdaptiveStdvar_Vec3(lastColorStdvar, lastColor, frameCount, resultColor, colorMean);
+	fColorStdvar = vec4(resultColorStdvar, 1.0);
+	// calc normal std var
+	vec3 lastNormalStdvar = texture(LastNormalStdvarTexture, TexCoords).rgb;
+	vec3 resultNormalStdvar = AdaptiveStdvar_Vec3(lastNormalStdvar, lastNormal, frameCount, resultNormal, normalMean);
+	fNormalStdvar = vec4(resultNormalStdvar, 1.0);
+	// calc worldpos std var
+	vec3 lastWorldPosStdvar = texture(LastWorldPosStdvarTexture, TexCoords).rgb;
+	vec3 resultWorldPosStdvar = AdaptiveStdvar_Vec3(lastWorldPosStdvar, lastWorldPos, frameCount, resultWorldPos, worldPosMean);
+	fWorldPosStdvar = vec4(resultWorldPosStdvar, 1.0);
 }
