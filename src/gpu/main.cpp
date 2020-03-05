@@ -22,8 +22,8 @@
 #include <vector>
 #include <stdlib.h>
 
-const unsigned int SCR_WIDTH = 512;
-const unsigned int SCR_HEIGHT = 512;
+const unsigned int SCR_WIDTH = 256;
+const unsigned int SCR_HEIGHT = 256;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -84,6 +84,14 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, textureWorldPosbuffer, 0);
+	// texture color
+	unsigned int textureTexbuffer;
+	glGenTextures(1, &textureTexbuffer);
+	glBindTexture(GL_TEXTURE_2D, textureTexbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, textureTexbuffer, 0);
 	// color std var
 	unsigned int texture_color_stdvar_buffer;
 	glGenTextures(1, &texture_color_stdvar_buffer);
@@ -91,7 +99,7 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, texture_color_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, texture_color_stdvar_buffer, 0);
 	// normal std var
 	unsigned int texture_normal_stdvar_buffer;
 	glGenTextures(1, &texture_normal_stdvar_buffer);
@@ -99,7 +107,7 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, texture_normal_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, texture_normal_stdvar_buffer, 0);
 	// world pos std var
 	unsigned int texture_worldpos_stdvar_buffer;
 	glGenTextures(1, &texture_worldpos_stdvar_buffer);
@@ -107,11 +115,12 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, texture_worldpos_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, texture_worldpos_stdvar_buffer, 0);
 	// - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	unsigned int attachments[6] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, 
-		GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5};
-	glDrawBuffers(6, attachments);
+	unsigned int attachments[7] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, 
+		GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,
+		GL_COLOR_ATTACHMENT6 };
+	glDrawBuffers(7, attachments);
 
 	// second color framebuffer
 	unsigned int lastFramebuffer;
@@ -140,6 +149,14 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, lastTextureWorldPosbuffer, 0);
+	// texture color
+	unsigned int lastTextureTexbuffer;
+	glGenTextures(1, &lastTextureTexbuffer);
+	glBindTexture(GL_TEXTURE_2D, lastTextureTexbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, lastTextureTexbuffer, 0);
 	// color std var
 	unsigned int lasttexture_color_stdvar_buffer;
 	glGenTextures(1, &lasttexture_color_stdvar_buffer);
@@ -147,7 +164,7 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, lasttexture_color_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, lasttexture_color_stdvar_buffer, 0);
 	// normal std var
 	unsigned int lasttexture_normal_stdvar_buffer;
 	glGenTextures(1, &lasttexture_normal_stdvar_buffer);
@@ -155,7 +172,7 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, lasttexture_normal_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, lasttexture_normal_stdvar_buffer, 0);
 	// world pos std var
 	unsigned int lasttexture_worldpos_stdvar_buffer;
 	glGenTextures(1, &lasttexture_worldpos_stdvar_buffer);
@@ -163,15 +180,15 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, lasttexture_worldpos_stdvar_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, lasttexture_worldpos_stdvar_buffer, 0);
 	// - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	glDrawBuffers(6, attachments);
+	glDrawBuffers(7, attachments);
 	
 	Shader myShader("../../src/gpu/vertexShader.vs.glsl", "../../src/gpu/fragmentShader.fs.glsl");
 	Shader quadShader("../../src/gpu/quadShader.vs.glsl", "../../src/gpu/quadShader.fs.glsl");
 
 	glm::vec3 lookfrom = glm::vec3(0, 2, 2.5);
-	glm::vec3 lookat = glm::vec3(0, 0, 0);
+	glm::vec3 lookat = glm::vec3(-2, 0, 0);
 	float distToFocus = 3.0f;
 	float aperture = 0.05f;
 	Camera cam(lookfrom, lookat, glm::vec3(0, 1, 0), 60, float(SCR_WIDTH) / float(SCR_HEIGHT), aperture, distToFocus);
@@ -180,9 +197,10 @@ int main()
 	myShader.setInt("LastColorTexture", 0);
 	myShader.setInt("LastNormalTexture", 1);
 	myShader.setInt("LastWorldPosTexture", 2);
-	myShader.setInt("LastColorStdvarTexture", 3);
-	myShader.setInt("LastNormalStdvarTexture", 4);
-	myShader.setInt("LastWorldPosStdvarTexture", 4);
+	myShader.setInt("LastTexTexture", 3);
+	myShader.setInt("LastColorStdvarTexture", 4);
+	myShader.setInt("LastNormalStdvarTexture", 5);
+	myShader.setInt("LastWorldPosStdvarTexture", 6);
 	quadShader.use();
 	quadShader.setInt("ColorTexture", 0);
 
@@ -212,10 +230,12 @@ int main()
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lastTextureWorldPosbuffer : textureWorldPosbuffer);
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lasttexture_color_stdvar_buffer : texture_color_stdvar_buffer);
+		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lastTextureTexbuffer : textureTexbuffer);
 		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lasttexture_normal_stdvar_buffer : texture_normal_stdvar_buffer);
+		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lasttexture_color_stdvar_buffer : texture_color_stdvar_buffer);
 		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lasttexture_normal_stdvar_buffer : texture_normal_stdvar_buffer);
+		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? lasttexture_worldpos_stdvar_buffer : texture_worldpos_stdvar_buffer);
 		// render
 		myShader.use();
@@ -242,23 +262,31 @@ int main()
 
 		frameCount++;
 
-		//// save {2, 4, 8, 16...} spp image
-		//if ((frameCount & frameCount - 1) == 0) {
-		//	// color
-		//	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		//	uint8_t* raw_img = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
-		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
-		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, raw_img);
-		//	saveTextureToBMP(SCR_WIDTH, SCR_HEIGHT, raw_img,
-		//		("../../src/gpu_out/color_spp_" + std::to_string(frameCount) + ".bmp").c_str());
-		//	// file
-		//	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		//	uint8_t* uint8Data = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
-		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
-		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
-		//	saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
-		//		("../../src/gpu_out/color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-		//}
+		// save {2, 4, 8, 16...} spp image
+		if ((frameCount & frameCount - 1) == 0) {
+		/*if (frameCount == 4 || frameCount == 8192) {*/
+			// color
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			uint8_t* raw_img = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
+			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, raw_img);
+			saveTextureToBMP(SCR_WIDTH, SCR_HEIGHT, raw_img,
+				("../../src/gpu_out/color_spp_" + std::to_string(frameCount) + ".bmp").c_str());
+			// file
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			uint8_t* uint8Data = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
+			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
+			saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
+				("../../src/gpu_out/color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+			// texture color
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			raw_img = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
+			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureTexbuffer : lastTextureTexbuffer); // bind matched texturebuffer
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, raw_img);
+			saveTextureToBMP(SCR_WIDTH, SCR_HEIGHT, raw_img,
+				("../../src/gpu_out/texture_spp_" + std::to_string(frameCount) + ".bmp").c_str());
+		}
 		if (frameCount == 4) {
 			// normal
 			float* floatData = (float*)malloc(sizeof(float) * SCR_WIDTH * SCR_HEIGHT * 3);

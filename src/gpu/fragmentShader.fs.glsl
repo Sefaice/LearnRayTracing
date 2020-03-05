@@ -4,9 +4,10 @@
 layout(location = 0) out vec4 fColor;
 layout(location = 1) out vec4 fNormal;
 layout(location = 2) out vec4 fWorldPos;
-layout(location = 3) out vec4 fColorStdvar;
-layout(location = 4) out vec4 fNormalStdvar;
-layout(location = 5) out vec4 fWorldPosStdvar;
+layout(location = 3) out vec4 fTexture;
+layout(location = 4) out vec4 fColorStdvar;
+layout(location = 5) out vec4 fNormalStdvar;
+layout(location = 6) out vec4 fWorldPosStdvar;
 
 in vec2 TexCoords;
 
@@ -26,6 +27,7 @@ uniform int frameCount;
 uniform sampler2D LastColorTexture;
 uniform sampler2D LastNormalTexture;
 uniform sampler2D LastWorldPosTexture;
+uniform sampler2D LastTexTexture;
 uniform sampler2D LastColorStdvarTexture;
 uniform sampler2D LastNormalStdvarTexture;
 uniform sampler2D LastWorldPosStdvarTexture;
@@ -49,6 +51,7 @@ const float kPI = 3.1415926f;
 int writeFeatures = 1;
 vec3 resultNormal = vec3(0, 0, 0);
 vec3 resultWorldPos = vec3(0, 0, 0);
+vec3 resultTexture = vec3(0, 0, 0);
 
 /* --------------------------------------------------------- */
 /* ------------------------ structs ------------------------ */
@@ -119,7 +122,7 @@ struct Material
 const Material s_SphereMats[] = Material[]
 (
     Material( Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0,0,0), 0, 0),
-	Material(Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material( Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
     Material( Lambert, vec3(0.8f, 0.4f, 0.4f), vec3(0,0,0), 0, 0),
     Material( Lambert, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0, 0),
     Material( Metal, vec3(0.4f, 0.4f, 0.8f), vec3(0,0,0), 0, 0 ),
@@ -413,6 +416,7 @@ vec3 TraceLoop(Ray r, int depth, inout uint state)
 			{
 				resultNormal = rec.normal;
 				resultWorldPos = rec.pos;
+				resultTexture = mat.albedo;
 				writeFeatures = 0;
 			}
 
@@ -505,6 +509,7 @@ void main()
 	vec3 lastColor = texture(LastColorTexture, TexCoords).rgb;
 	vec3 colorMean = lastColor * lerpFac + resultColor * (1 - lerpFac);
 	fColor = vec4(colorMean, 1.0);
+
 	// the rest is for generating grad proj data
 	// lerp normal
 	vec3 lastNormal = texture(LastNormalTexture, TexCoords).rgb;
@@ -514,6 +519,10 @@ void main()
 	vec3 lastWorldPos = texture(LastWorldPosTexture, TexCoords).rgb;
 	vec3 worldPosMean = lastWorldPos * lerpFac + resultWorldPos * (1 - lerpFac);
 	fWorldPos = vec4(worldPosMean, 1.0);
+	// lerp texture color
+	vec3 lastTexture = texture(LastTexTexture, TexCoords).rgb;
+	vec3 textureMean = lastTexture * lerpFac + resultTexture * (1 - lerpFac);
+	fTexture = vec4(textureMean, 1.0);
 	// calc color std var
 	vec3 lastColorStdvar = texture(LastColorStdvarTexture, TexCoords).rgb;
 	vec3 resultColorStdvar = AdaptiveStdvar_Vec3(lastColorStdvar, lastColor, frameCount, resultColor, colorMean);
