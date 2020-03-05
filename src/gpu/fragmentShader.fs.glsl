@@ -86,7 +86,7 @@ struct Sphere
 const Sphere s_Spheres[] = Sphere[]
 (
 	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
-	Sphere(vec3(0, 0, -105), 10000.0f),
+	Sphere(vec3(0, 0, -104), 10000.0f),
 	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
 	Sphere(vec3(0,0,-1), 0.25f),
 	Sphere(vec3(-2,0,-1), 0.25f),
@@ -94,7 +94,7 @@ const Sphere s_Spheres[] = Sphere[]
 	Sphere(vec3(0,0,1), 0.25f),
 	Sphere(vec3(-2,0,1), 0.25f),
 	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
-	Sphere(vec3(-1.5f,2.5f,0.f), 0.09f)// 白色
+	Sphere(vec3(-1.5f,3.0f,0.f), 0.09f)// 白色
 );
 
 const int kSphereCount = 10;
