@@ -85,16 +85,30 @@ struct Sphere
 
 const Sphere s_Spheres[] = Sphere[]
 (
-	Sphere(vec3(0,-100.5,-1), 10000.0f),// 巨大球体作为下方背景
-	Sphere(vec3(0, 0, -104), 10000.0f),
-	Sphere(vec3(2,1,-1), 0.25f),// 后排最右红色
-	Sphere(vec3(0,0,-1), 0.25f),
-	Sphere(vec3(-2,0,-1), 0.25f),
-	Sphere(vec3(2,0,1), 0.25f),
-	Sphere(vec3(0,0,1), 0.25f),
-	Sphere(vec3(-2,0,1), 0.25f),
-	Sphere(vec3(0.5f,1,0.5f), 0.25f),// 玻璃球
-	Sphere(vec3(-1.5f,3.0f,0.f), 0.09f)// 白色
+	// lights
+	Sphere(vec3(-1.5f, 3.5f, 0.f), 0.09f),
+	// Sphere(vec3(1.5f, 1.5f, -2), 0.3f),
+	// walls
+	Sphere(vec3(0, -1000.5, -1), 1000000.0f), // 巨大球体作为下方背景
+	Sphere(vec3(0, 0, -1010), 1000000.0f), // back wall
+	// others
+	Sphere(vec3(2, 1, -1), 0.25f), // 后排最右红色
+	Sphere(vec3(0, 0, -1), 0.25f),
+	Sphere(vec3(-2, 0, -1), 0.25f),
+	Sphere(vec3(4, 0, -3), 0.5f),
+	Sphere(vec3(3, 0, -3), 0.5f),
+	Sphere(vec3(2, 0, -3), 0.5f),
+	Sphere(vec3(0.5f, 1, -1.0f), 0.25f) // 玻璃球
+	//Sphere(vec3(1, 0, -3), 0.5f),
+	//Sphere(vec3(0, 0, -3), 0.5f),
+	//Sphere(vec3(-1, 0, -3), 0.5f),
+	//Sphere(vec3(-2, 0, -3), 0.5f),
+	//Sphere(vec3(-3, 0, -3), 0.5f),
+	//Sphere(vec3(-4, 0, -3), 0.5f),
+	/*Sphere(vec3(4, 0, -4), 0.5f), Sphere(vec3(3, 0, -4), 0.5f), Sphere(vec3(2, 0, -4), 0.5f), Sphere(vec3(1, 0, -4), 0.5f), Sphere(vec3(0, 0, -4), 0.5f), Sphere(vec3(-1, 0, -4), 0.5f), Sphere(vec3(-2, 0, -4), 0.5f), Sphere(vec3(-3, 0, -4), 0.5f), Sphere(vec3(-4, 0, -4), 0.5f),
+	Sphere(vec3(4, 0, -5), 0.5f), Sphere(vec3(3, 0, -5), 0.5f), Sphere(vec3(2, 0, -5), 0.5f), Sphere(vec3(1, 0, -5), 0.5f), Sphere(vec3(0, 0, -5), 0.5f), Sphere(vec3(-1, 0, -5), 0.5f), Sphere(vec3(-2, 0, -5), 0.5f), Sphere(vec3(-3, 0, -5), 0.5f), Sphere(vec3(-4, 0, -5), 0.5f),
+	Sphere(vec3(4, 0, -6), 0.5f), Sphere(vec3(3, 0, -6), 0.5f), Sphere(vec3(2, 0, -6), 0.5f), Sphere(vec3(1, 0, -6), 0.5f), Sphere(vec3(0, 0, -6), 0.5f), Sphere(vec3(-1, 0, -6), 0.5f), Sphere(vec3(-2, 0, -6), 0.5f), Sphere(vec3(-3, 0, -6), 0.5f), Sphere(vec3(-4, 0, -6), 0.5f),
+	*/
 );
 
 const int kSphereCount = 10;
@@ -121,20 +135,42 @@ struct Material
 
 const Material s_SphereMats[] = Material[]
 (
-    Material( Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0,0,0), 0, 0),
-	Material( Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
-    Material( Lambert, vec3(0.8f, 0.4f, 0.4f), vec3(0,0,0), 0, 0),
-    Material( Lambert, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0, 0),
-    Material( Metal, vec3(0.4f, 0.4f, 0.8f), vec3(0,0,0), 0, 0 ),
-    Material( Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0, 0 ),
-    Material( Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0.2f, 0 ),
-    Material( Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0,0,0), 0.6f, 0 ),
-    Material( Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0,0,0), 0, 1.5f ),
-    Material( Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(40,30,20), 0, 0 )
+	// lights
+	Material(Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(40, 30, 20), 0, 0),
+	// Material(Lambert, vec3(0.1f, 0.2f, 0.5f), vec3(3, 10, 20), 0, 0),
+	// walls
+	Material(Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.6f, 0.5f, 0.6f), vec3(0, 0, 0), 0, 0),
+	// others
+	Material(Lambert, vec3(0.8f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.4f, 0.4f, 0.8f), vec3(0, 0, 0), 0, 0),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f)
+	/*Material(Lambert, vec3(0.2f, 0.2f, 0.2f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.3f, 0.3f, 0.3f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.5f, 0.5f, 0.5f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0),*/
+	/*Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0.2f, 0),
+	Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0.6f, 0),
+	*/
+
+	// Material(Metal, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
+	/*Material(Metal, vec3(0.2f, 0.2f, 0.2f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.3f, 0.3f, 0.3f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.5f, 0.5f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.5f, 0.1f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.8f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.4f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.1f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.5f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.5f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.4f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.5f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0),*/
 );
 
 const int emissiveCount = 1;
-const int emissiveSpheres[] = int[](9);
+const int emissiveSpheres[] = int[](0); // emissive spheres' index
 
 /* ------------------------------------------------------- */
 /* ------------------------ funcs ------------------------ */
@@ -511,28 +547,30 @@ void main()
 	fColor = vec4(colorMean, 1.0);
 
 	// the rest is for generating grad proj data
-	// lerp normal
-	vec3 lastNormal = texture(LastNormalTexture, TexCoords).rgb;
-	vec3 normalMean = lastNormal * lerpFac + resultNormal * (1 - lerpFac);
-	fNormal = vec4(normalMean, 1.0);
-	// lerp worldpos
-	vec3 lastWorldPos = texture(LastWorldPosTexture, TexCoords).rgb;
-	vec3 worldPosMean = lastWorldPos * lerpFac + resultWorldPos * (1 - lerpFac);
-	fWorldPos = vec4(worldPosMean, 1.0);
-	// lerp texture color
-	vec3 lastTexture = texture(LastTexTexture, TexCoords).rgb;
-	vec3 textureMean = lastTexture * lerpFac + resultTexture * (1 - lerpFac);
-	fTexture = vec4(textureMean, 1.0);
-	// calc color std var
-	vec3 lastColorStdvar = texture(LastColorStdvarTexture, TexCoords).rgb;
-	vec3 resultColorStdvar = AdaptiveStdvar_Vec3(lastColorStdvar, lastColor, frameCount, resultColor, colorMean);
-	fColorStdvar = vec4(resultColorStdvar, 1.0);
-	// calc normal std var
-	vec3 lastNormalStdvar = texture(LastNormalStdvarTexture, TexCoords).rgb;
-	vec3 resultNormalStdvar = AdaptiveStdvar_Vec3(lastNormalStdvar, lastNormal, frameCount, resultNormal, normalMean);
-	fNormalStdvar = vec4(resultNormalStdvar, 1.0);
-	// calc worldpos std var
-	vec3 lastWorldPosStdvar = texture(LastWorldPosStdvarTexture, TexCoords).rgb;
-	vec3 resultWorldPosStdvar = AdaptiveStdvar_Vec3(lastWorldPosStdvar, lastWorldPos, frameCount, resultWorldPos, worldPosMean);
-	fWorldPosStdvar = vec4(resultWorldPosStdvar, 1.0);
+	if (frameCount <= 4) { // only calc it when spp<=4
+		// lerp normal
+		vec3 lastNormal = texture(LastNormalTexture, TexCoords).rgb;
+		vec3 normalMean = lastNormal * lerpFac + resultNormal * (1 - lerpFac);
+		fNormal = vec4(normalMean, 1.0);
+		// lerp worldpos
+		vec3 lastWorldPos = texture(LastWorldPosTexture, TexCoords).rgb;
+		vec3 worldPosMean = lastWorldPos * lerpFac + resultWorldPos * (1 - lerpFac);
+		fWorldPos = vec4(worldPosMean, 1.0);
+		// lerp texture color
+		vec3 lastTexture = texture(LastTexTexture, TexCoords).rgb;
+		vec3 textureMean = lastTexture * lerpFac + resultTexture * (1 - lerpFac);
+		fTexture = vec4(textureMean, 1.0);
+		// calc color std var
+		vec3 lastColorStdvar = texture(LastColorStdvarTexture, TexCoords).rgb;
+		vec3 resultColorStdvar = AdaptiveStdvar_Vec3(lastColorStdvar, lastColor, frameCount, resultColor, colorMean);
+		fColorStdvar = vec4(resultColorStdvar, 1.0);
+		// calc normal std var
+		vec3 lastNormalStdvar = texture(LastNormalStdvarTexture, TexCoords).rgb;
+		vec3 resultNormalStdvar = AdaptiveStdvar_Vec3(lastNormalStdvar, lastNormal, frameCount, resultNormal, normalMean);
+		fNormalStdvar = vec4(resultNormalStdvar, 1.0);
+		// calc worldpos std var
+		vec3 lastWorldPosStdvar = texture(LastWorldPosStdvarTexture, TexCoords).rgb;
+		vec3 resultWorldPosStdvar = AdaptiveStdvar_Vec3(lastWorldPosStdvar, lastWorldPos, frameCount, resultWorldPos, worldPosMean);
+		fWorldPosStdvar = vec4(resultWorldPosStdvar, 1.0);
+	}
 }

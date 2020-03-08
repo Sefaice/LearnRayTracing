@@ -1,4 +1,4 @@
-// scene 1
+// scene 1, total 10, 1 light
 
 const Sphere s_Spheres[] = Sphere[]
 (
@@ -33,4 +33,4 @@ const Material s_SphereMats[] = Material[]
 const int emissiveCount = 1;
 const int emissiveSpheres[] = int[](9);
 
-// scene 2
+// scene 2, total 47, 2 lights
