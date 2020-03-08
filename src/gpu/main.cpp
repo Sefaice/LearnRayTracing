@@ -25,8 +25,10 @@
 const unsigned int SCR_WIDTH = 256;
 const unsigned int SCR_HEIGHT = 256;
 
-const unsigned int SCENE_POS = 20;
-const glm::vec3 LOOK_AT_POS = glm::vec3(2, -2, 0); // (-2~2, 1~-2, 0), total 20
+unsigned int SCENE_NUM = 2;
+unsigned int SCENE_POS = 1;
+glm::vec3 LOOK_FROM_POS = glm::vec3(0, 2, 3);
+glm::vec3 LOOK_AT_POS = glm::vec3(0, 0, 0); // (-2~2, 1~-2, 0), total 20
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -190,7 +192,8 @@ int main()
 	Shader myShader("../../src/gpu/vertexShader.vs.glsl", "../../src/gpu/fragmentShader.fs.glsl");
 	Shader quadShader("../../src/gpu/quadShader.vs.glsl", "../../src/gpu/quadShader.fs.glsl");
 
-	glm::vec3 lookfrom = glm::vec3(0, 2, 2.5);
+label:
+	glm::vec3 lookfrom = LOOK_FROM_POS;
 	glm::vec3 lookat = LOOK_AT_POS;
 	float distToFocus = 3.0f;
 	float aperture = 0.05f;
@@ -267,57 +270,68 @@ int main()
 
 		// save {2, 4, 8, 16...} spp image
 		//if ((frameCount & frameCount - 1) == 0) {
-		if (frameCount == 4 || frameCount == 8192) {
+		if (frameCount == 4 || frameCount == 256) {
 			// color
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
 			uint8_t* raw_img = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
 			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, raw_img);
 			saveTextureToBMP(SCR_WIDTH, SCR_HEIGHT, raw_img,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".bmp").c_str());
+				("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".bmp").c_str());
 			// file
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
 			uint8_t* uint8Data = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
 			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureColorbuffer : lastTextureColorbuffer); // bind matched texturebuffer
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
 			saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+				("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+			// end this pos's rendering
+			if (frameCount == 256) {
+				printf("SWITCH POS\n");
+				SCENE_POS++;
+				LOOK_AT_POS.x += 0.5;
+				frameCount = 0;
+
+				glfwPollEvents();
+				glfwSwapBuffers(window);
+				goto label;
+			}
 		}
-		if (frameCount == 4) {
-			// normal
-			float* floatData = (float*)malloc(sizeof(float) * SCR_WIDTH * SCR_HEIGHT * 3);
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureNormalbuffer : lastTextureNormalbuffer);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
-			saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_normal_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			// world pos
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureWorldPosbuffer : lastTextureWorldPosbuffer);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
-			saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_worldpos_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			// texture color
-			glPixelStorei(GL_PACK_ALIGNMENT, 1);
-			uint8_t* uint8Data = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureTexbuffer : lastTextureTexbuffer); // bind matched texturebuffer
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
-			saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_texture_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			// color std var
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_color_stdvar_buffer : lasttexture_color_stdvar_buffer);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
-			saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_color_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			// normal std var
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_normal_stdvar_buffer : lasttexture_normal_stdvar_buffer);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
-			saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_normal_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			// worldpos std var
-			glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_worldpos_stdvar_buffer : lasttexture_worldpos_stdvar_buffer);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
-			saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
-				("../../src/gpu_out/pos_" + std::to_string(SCENE_POS) + "_worldpos_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-		}
+		//if (frameCount == 4) {
+		//	// normal
+		//	float* floatData = (float*)malloc(sizeof(float) * SCR_WIDTH * SCR_HEIGHT * 3);
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureNormalbuffer : lastTextureNormalbuffer);
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
+		//	saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_normal_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//	// world pos
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureWorldPosbuffer : lastTextureWorldPosbuffer);
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
+		//	saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_worldpos_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//	// texture color
+		//	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		//	uint8_t* uint8Data = (uint8_t*)malloc(sizeof(uint8_t) * SCR_WIDTH * SCR_HEIGHT * 3);
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? textureTexbuffer : lastTextureTexbuffer); // bind matched texturebuffer
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
+		//	saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_texture_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//	// color std var
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_color_stdvar_buffer : lasttexture_color_stdvar_buffer);
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
+		//	saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_color_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//	// normal std var
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_normal_stdvar_buffer : lasttexture_normal_stdvar_buffer);
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
+		//	saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_normal_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//	// worldpos std var
+		//	glBindTexture(GL_TEXTURE_2D, switchBuffer == 0 ? texture_worldpos_stdvar_buffer : lasttexture_worldpos_stdvar_buffer);
+		//	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, floatData);
+		//	saveTextureToBinary_float(SCR_WIDTH, SCR_HEIGHT, floatData,
+		//		("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_worldpos_stdvar_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		//}
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
