@@ -87,31 +87,23 @@ const Sphere s_Spheres[] = Sphere[]
 (
 	// lights
 	Sphere(vec3(-1.5f, 3.5f, 0.f), 0.09f),
-	// Sphere(vec3(1.5f, 1.5f, -2), 0.3f),
+	Sphere(vec3(1.5f, 1.5f, 8), 0.3f),
 	// walls
 	Sphere(vec3(0, -1000.5, -1), 1000000.0f), // 巨大球体作为下方背景
 	Sphere(vec3(0, 0, -1010), 1000000.0f), // back wall
 	// others
-	Sphere(vec3(2, 1, -1), 0.25f), // 后排最右红色
-	Sphere(vec3(0, 0, -1), 0.25f),
-	Sphere(vec3(-2, 0, -1), 0.25f),
-	Sphere(vec3(4, 0, -3), 0.5f),
-	Sphere(vec3(3, 0, -3), 0.5f),
-	Sphere(vec3(2, 0, -3), 0.5f),
-	Sphere(vec3(0.5f, 1, -1.0f), 0.25f) // 玻璃球
-	//Sphere(vec3(1, 0, -3), 0.5f),
-	//Sphere(vec3(0, 0, -3), 0.5f),
-	//Sphere(vec3(-1, 0, -3), 0.5f),
-	//Sphere(vec3(-2, 0, -3), 0.5f),
-	//Sphere(vec3(-3, 0, -3), 0.5f),
-	//Sphere(vec3(-4, 0, -3), 0.5f),
-	/*Sphere(vec3(4, 0, -4), 0.5f), Sphere(vec3(3, 0, -4), 0.5f), Sphere(vec3(2, 0, -4), 0.5f), Sphere(vec3(1, 0, -4), 0.5f), Sphere(vec3(0, 0, -4), 0.5f), Sphere(vec3(-1, 0, -4), 0.5f), Sphere(vec3(-2, 0, -4), 0.5f), Sphere(vec3(-3, 0, -4), 0.5f), Sphere(vec3(-4, 0, -4), 0.5f),
-	Sphere(vec3(4, 0, -5), 0.5f), Sphere(vec3(3, 0, -5), 0.5f), Sphere(vec3(2, 0, -5), 0.5f), Sphere(vec3(1, 0, -5), 0.5f), Sphere(vec3(0, 0, -5), 0.5f), Sphere(vec3(-1, 0, -5), 0.5f), Sphere(vec3(-2, 0, -5), 0.5f), Sphere(vec3(-3, 0, -5), 0.5f), Sphere(vec3(-4, 0, -5), 0.5f),
-	Sphere(vec3(4, 0, -6), 0.5f), Sphere(vec3(3, 0, -6), 0.5f), Sphere(vec3(2, 0, -6), 0.5f), Sphere(vec3(1, 0, -6), 0.5f), Sphere(vec3(0, 0, -6), 0.5f), Sphere(vec3(-1, 0, -6), 0.5f), Sphere(vec3(-2, 0, -6), 0.5f), Sphere(vec3(-3, 0, -6), 0.5f), Sphere(vec3(-4, 0, -6), 0.5f),
-	*/
+	Sphere(vec3(-1.4f, 0.3f, 1.0f), 0.25f),
+	Sphere(vec3(-1.5f, 0.8f, -0.6f), 0.25f),
+	Sphere(vec3(-1.0f, 0.4f, -1.5f), 0.25f),
+	Sphere(vec3(2.0f, 0.4f, -0.7f), 0.5f),
+	Sphere(vec3(0.0f, 0.0f, 1.0f), 0.20f),
+	Sphere(vec3(0.5f, 0.0f, -1.0f), 0.5f),
+	Sphere(vec3(1.5f, 0.0f, 0.5f), 0.25f),
+	Sphere(vec3(1.0f, 1.0f, -2.0f), 1.0f),
+	Sphere(vec3(2.0f, 0.7f, 1.0f), 0.25f)
 );
 
-const int kSphereCount = 10;
+const int kSphereCount = 13;
 
 struct SpheresSoA
 {
@@ -136,41 +128,25 @@ struct Material
 const Material s_SphereMats[] = Material[]
 (
 	// lights
-	Material(Lambert, vec3(0.8f, 0.6f, 0.2f), vec3(40, 30, 20), 0, 0),
-	// Material(Lambert, vec3(0.1f, 0.2f, 0.5f), vec3(3, 10, 20), 0, 0),
+	Material(Lambert, vec3(0.8f, 0.7f, 0.2f), vec3(60, 40, 40), 0, 0),
+	Material(Lambert, vec3(0.1f, 0.2f, 0.5f), vec3(20, 10, 10), 0, 0),
 	// walls
-	Material(Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.6f, 0.5f, 0.6f), vec3(0, 0, 0), 0, 0),
-	// others
-	Material(Lambert, vec3(0.8f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.4f, 0.4f, 0.8f), vec3(0, 0, 0), 0, 0),
-	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f)
-	/*Material(Lambert, vec3(0.2f, 0.2f, 0.2f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.3f, 0.3f, 0.3f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.5f, 0.5f, 0.5f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0),
 	Material(Lambert, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0),*/
-	/*Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0.2f, 0),
-	Material(Metal, vec3(0.4f, 0.8f, 0.4f), vec3(0, 0, 0), 0.6f, 0),
-	*/
-
-	// Material(Metal, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
-	/*Material(Metal, vec3(0.2f, 0.2f, 0.2f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.3f, 0.3f, 0.3f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.5f, 0.5f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.8f, 0.5f, 0.1f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.8f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.4f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.1f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.1f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Metal, vec3(0.5f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.5f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.8f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.4f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.1f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.5f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.8f, 0.8f), vec3(0, 0, 0), 0, 0), Material(Lambert, vec3(0.1f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.5f, 0.1f, 0.8f), vec3(0, 0, 0), 0, 0),*/
+	// others
+	Material(Lambert, vec3(0.8f, 0.4f, 0.78f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.6f, 0.7f, 0.5f), vec3(0, 0, 0), 0, 0),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.8f), vec3(0, 0, 0), 0, 1.2f),
+	Material(Lambert, vec3(0.4f, 0.76f, 0.4f), vec3(0, 0, 0), 0, 0),
+	Material(Metal, vec3(0.4f, 0.35f, 0.35f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f),
+	Material(Metal, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f)
 );
 
-const int emissiveCount = 1;
-const int emissiveSpheres[] = int[](0); // emissive spheres' index
+const int emissiveCount = 2;
+const int emissiveSpheres[] = int[](0, 1); // emissive spheres' index
 
 /* ------------------------------------------------------- */
 /* ------------------------ funcs ------------------------ */

@@ -25,13 +25,13 @@
 const unsigned int SCR_WIDTH = 256;
 const unsigned int SCR_HEIGHT = 256;
 
-unsigned int SCENE_NUM = 2;
-unsigned int SCENE_POS = 26;
-glm::vec3 LOOK_FROM_POS = glm::vec3(0, 2, 2.5);
-glm::vec3 LOOK_AT_POS = glm::vec3(0.5, 0, 0); // 49
+unsigned int SCENE_NUM = 3;
+unsigned int SCENE_POS = 17;
+glm::vec3 LOOK_FROM_POS = glm::vec3(0, 2, 2);
+glm::vec3 LOOK_AT_POS = glm::vec3(-1.5, -1.0, 0);
 // calc pos steps
-const float X_START = -1.5, Y_START = -1.5, STEP = 0.5;
-int pos_x = 4, pos_y = 3, LENGTH = 6;
+const float X_START = -1.5, Y_START = -2.0, STEP = 0.5;
+int pos_x = 0, pos_y = 2, LENGTH = 7;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -287,7 +287,6 @@ int main()
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
 			saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
 				("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
-			
 			// end this pos's rendering
 			if (frameCount == 8192) {
 				printf("SWITCH POS\n");
