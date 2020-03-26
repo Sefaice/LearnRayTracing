@@ -21,17 +21,19 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <string>
 
 const unsigned int SCR_WIDTH = 256;
 const unsigned int SCR_HEIGHT = 256;
 
-unsigned int SCENE_NUM = 3;
-unsigned int SCENE_POS = 17;
-glm::vec3 LOOK_FROM_POS = glm::vec3(0, 2, 2);
-glm::vec3 LOOK_AT_POS = glm::vec3(-1.5, -1.0, 0);
+unsigned int SCENE_NUM = 9;
+unsigned int SCENE_POS = 1;
+glm::vec3 LOOK_FROM_POS = glm::vec3(0, 3, 3);
+glm::vec3 LOOK_AT_POS = glm::vec3(-2.0, -1.0, 0);
 // calc pos steps
-const float X_START = -1.5, Y_START = -2.0, STEP = 0.5;
-int pos_x = 0, pos_y = 2, LENGTH = 7;
+const float X_START = -2.0, Y_START = -1.0, STEP = 0.5;
+int pos_x = 0, pos_y = 0, LENGTH = 7;
+int iteNum = 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -41,8 +43,16 @@ void renderQuad();
 float deltaTime = 0.0f;	
 float lastFrame = 0.0f;
 
-int main()
+int main(int argc, char** argv)
 {
+	// init args
+	pos_x = std::atoi(argv[1]);
+	pos_y = std::atoi(argv[2]);
+	LOOK_AT_POS.x = std::atof(argv[3]);
+	LOOK_AT_POS.y = std::atof(argv[4]);
+	SCENE_POS = std::atoi(argv[5]);
+	printf("argc %d pos %d\n", argc, SCENE_POS); // 1 stands for none args
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -287,11 +297,14 @@ int main()
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uint8Data);
 			saveTextureToBinary_uint8(SCR_WIDTH, SCR_HEIGHT, uint8Data,
 				("../../src/gpu_out/scene_" + std::to_string(SCENE_NUM) + "_pos_" + std::to_string(SCENE_POS) + "_color_spp_" + std::to_string(frameCount) + ".fgg").c_str());
+		
+
 			// end this pos's rendering
 			if (frameCount == 8192) {
 				printf("SWITCH POS\n");
 				SCENE_POS++;
 				frameCount = 0;
+				iteNum++;
 				// update look at pos
 				if (pos_x < LENGTH) {
 					LOOK_AT_POS.x += STEP;
@@ -303,12 +316,12 @@ int main()
 					pos_x = 0;
 					pos_y++;
 				}
-				if (pos_y > LENGTH) { // end
+				if (iteNum >= 4 || pos_y > LENGTH) { // end
 					goto endlabel;
 				}
-
 				cam = Camera(LOOK_FROM_POS, LOOK_AT_POS, glm::vec3(0, 1, 0), 60, float(SCR_WIDTH) / float(SCR_HEIGHT), aperture, distToFocus);
 			}
+			
 		}
 		//if (frameCount == 4) {
 		//	// normal
@@ -353,7 +366,6 @@ int main()
 endlabel:
 	glfwTerminate();
 
-	system("Pause");
 	return 0;
 }
 

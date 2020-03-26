@@ -42,7 +42,7 @@ void saveTextureToBMP(int w, int h, uint8_t* img, const char* path) {
     errno_t err;
     err = fopen_s(&f, path, "wb");
     if (err == 0) {
-        printf("The file was opened\n");
+        //printf("The file was opened\n");
         fwrite(bmpfileheader, 1, 14, f);
         fwrite(bmpinfoheader, 1, 40, f);
         for (int i = 0; i < h; i++)
@@ -65,7 +65,7 @@ void saveTextureToBinary_uint8(int w, int h, uint8_t* data, const char* path) {
     errno_t err;
     err = fopen_s(&f, path, "wb");
     if (err == 0) {
-        printf("The file was opened\n");
+        //printf("The file was opened\n");
         for (int i = 0; i < h; i++)
         {
             fwrite(data + (h - i - 1) * w * 3, 3, w, f);
@@ -79,14 +79,12 @@ void saveTextureToBinary_uint8(int w, int h, uint8_t* data, const char* path) {
 
 
 void saveTextureToBinary_float(int w, int h, float* data, const char* path) {
-    /* printf("TheEEEEEEEE %d", strlen(data));*/
-
     // write
     FILE* f = NULL;
     errno_t err;
     err = fopen_s(&f, path, "wb");
     if (err == 0) {
-        printf("The file was opened\n");
+        //printf("The file was opened\n");
         for (int i = 0; i < h; i++)
         {
             fwrite(data + (h - i - 1) * w * 3, 12, w, f);

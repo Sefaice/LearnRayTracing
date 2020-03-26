@@ -86,24 +86,38 @@ struct Sphere
 const Sphere s_Spheres[] = Sphere[]
 (
 	// lights
-	Sphere(vec3(-1.5f, 3.5f, 0.f), 0.09f),
-	Sphere(vec3(1.5f, 1.5f, 8), 0.3f),
+	Sphere(vec3(0.4f, 5.5f, 1.3f), 0.4f),
+	Sphere(vec3(0.05f, 5.0f, 3.0f), 0.1f),
 	// walls
 	Sphere(vec3(0, -1000.5, -1), 1000000.0f), // 巨大球体作为下方背景
 	Sphere(vec3(0, 0, -1010), 1000000.0f), // back wall
 	// others
-	Sphere(vec3(-1.4f, 0.3f, 1.0f), 0.25f),
-	Sphere(vec3(-1.5f, 0.8f, -0.6f), 0.25f),
-	Sphere(vec3(-1.0f, 0.4f, -1.5f), 0.25f),
-	Sphere(vec3(2.0f, 0.4f, -0.7f), 0.5f),
-	Sphere(vec3(0.0f, 0.0f, 1.0f), 0.20f),
-	Sphere(vec3(0.5f, 0.0f, -1.0f), 0.5f),
-	Sphere(vec3(1.5f, 0.0f, 0.5f), 0.25f),
-	Sphere(vec3(1.0f, 1.0f, -2.0f), 1.0f),
-	Sphere(vec3(2.0f, 0.7f, 1.0f), 0.25f)
+	Sphere(vec3(-3.0f, 0.5f, -0.0f), 0.5f),
+	Sphere(vec3(-1.0f, 0.5f, -0.0f), 0.5f),
+	Sphere(vec3(1.0f, 0.5f, -0.0f), 0.5f),
+	Sphere(vec3(3.0f, 0.5f, -0.0f), 0.5f),
+	Sphere(vec3(-3.0f, 2.5f, -0.0f), 0.5f),
+	Sphere(vec3(-1.0f, 2.5f, -0.0f), 0.5f),
+	Sphere(vec3(1.0f, 2.5f, -0.0f), 0.5f),
+	Sphere(vec3(3.0f, 2.5f, -0.0f), 0.5f),
+
+	Sphere(vec3(-2.0f, 0.5f, -2.0f), 1.5f),
+	Sphere(vec3(2.0f, 0.5f, -2.0f), 1.5f),
+	Sphere(vec3(-2.0f, 2.5f, -2.0f), 1.5f),
+	Sphere(vec3(2.0f, 2.5f, -2.0f), 1.5f)
+	
+	/*Sphere(vec3(-2.5f, 3.5f, -2.5f), 1.0f),
+	Sphere(vec3(-2.5f, 3.5f, 0.0f), 1.0f),
+	Sphere(vec3(-2.5f, 3.5f, 2.0f), 1.0f),
+	Sphere(vec3(2.5f, 3.5f, -2.5f), 1.0f),
+	Sphere(vec3(2.5f, 3.5f, 0.0f), 1.0f),
+	Sphere(vec3(2.5f, 3.5f, 2.0f), 1.0f),
+	Sphere(vec3(-1.2f, 3.5f, 5.0f), 1.0f),
+	Sphere(vec3(1.2f, 3.5f, 5.0f), 1.0f),
+	Sphere(vec3(0.0f, 3.0f, 0.5f), 2.5f)*/
 );
 
-const int kSphereCount = 13;
+const int kSphereCount = 16;
 
 struct SpheresSoA
 {
@@ -128,21 +142,25 @@ struct Material
 const Material s_SphereMats[] = Material[]
 (
 	// lights
-	Material(Lambert, vec3(0.8f, 0.7f, 0.2f), vec3(60, 40, 40), 0, 0),
-	Material(Lambert, vec3(0.1f, 0.2f, 0.5f), vec3(20, 10, 10), 0, 0),
+	Material(Lambert, vec3(0.8f, 0.7f, 0.2f), vec3(40, 40, 40), 0, 0),
+	Material(Lambert, vec3(0.1f, 0.2f, 0.5f), vec3(30, 30, 30), 0, 0),
 	// walls
-	Material(Lambert, vec3(0.7f, 0.7f, 0.7f), vec3(0, 0, 0), 0, 0),
+	Material(Lambert, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
 	Material(Lambert, vec3(0.6f, 0.6f, 0.6f), vec3(0, 0, 0), 0, 0),
 	// others
-	Material(Lambert, vec3(0.8f, 0.4f, 0.78f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.6f, 0.7f, 0.5f), vec3(0, 0, 0), 0, 0),
-	Material(Dielectric, vec3(0.4f, 0.4f, 0.8f), vec3(0, 0, 0), 0, 1.2f),
-	Material(Lambert, vec3(0.4f, 0.76f, 0.4f), vec3(0, 0, 0), 0, 0),
-	Material(Metal, vec3(0.4f, 0.35f, 0.35f), vec3(0, 0, 0), 0, 0),
-	Material(Lambert, vec3(0.1f, 0.1f, 0.1f), vec3(0, 0, 0), 0, 0),
-	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f),
-	Material(Metal, vec3(0.9f, 0.9f, 0.9f), vec3(0, 0, 0), 0, 0),
-	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.5f)
+	Material(Lambert, vec3(0.4195, 0.9936, 0.1768), vec3(0, 0, 0), 0, 0.0f),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.1f),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.2f),
+	Material(Lambert, vec3(0.2050, 0.6987, 0.9338), vec3(0, 0, 0), 0, 0.0f),
+	Material(Lambert, vec3(0.7028, 0.9109, 0.7888), vec3(0, 0, 0), 0, 0.0f),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.3f),
+	Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.4f),
+	Material(Lambert, vec3(0.4127, 0.4738, 0.6997), vec3(0, 0, 0), 0, 0.0f),
+	Material(Metal, vec3(0.1987, 0.7430, 0.8941), vec3(0, 0, 0), 0, 0.0f),
+	Material(Metal, vec3(0.1719, 0.9611, 0.7890), vec3(0, 0, 0), 0, 0.0f),
+	Material(Metal, vec3(0.5666, 0.9189, 0.7103), vec3(0, 0, 0), 0, 0.0f),
+	Material(Metal, vec3(0.9774, 0.0989, 0.7561), vec3(0, 0, 0), 0, 0.0f)
+	//Material(Dielectric, vec3(0.4f, 0.4f, 0.4f), vec3(0, 0, 0), 0, 1.6f)
 );
 
 const int emissiveCount = 2;
